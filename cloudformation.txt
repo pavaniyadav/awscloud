@@ -1,0 +1,22 @@
+automate the provisoning of resources 
+automate process of provisioning 
+
+we can represent all the resouces that we need for workloads as templeate using json or yaml and we can automate the process of provisioning 
+
+in aws cloud there diff way to provision infra 
+i.e through management console which is a self service dash board or AWS Cli or sdk's 
+
+even we have other tools like terraform which HAsiCorp which is opensource tool which is having lots of features for automatic infra provisioning.
+
+but in this session we are going to focus on cloudformation the concepts using json & yaml
+
+CloudFormation is one of best service and built-in choice for infrastructure as code. 
+
+Infrastructure as code is the process of provisioning and managing your cloud resources by writing a template file that is both human readable, and machine consumable.
+
+CloudFormation uses templates, configuration files defined in JSON or YAML syntax, that are human readable and can be easily edited, which you can use to define the resources you want to set up. CloudFormation reads a template and generates a stack, a set of resources ready to use on AWS.
+
+there are lots of advantages with infra as code 
+we can maintain multiple versions of the code, i.e. we keep it in version control if there are any issue with latest deployments of infra we have control to roll back to the previous version.
+
+here we are going disscuss losts of example & advance cocepts and it going to help you to implement cloudformation as part of your projects.

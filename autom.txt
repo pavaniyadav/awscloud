@@ -1,0 +1,7 @@
+autom is one of popular editor used in real-time. it has support for lots of lang like json, yaml, groovi, python etc. to develop diff applications.
+
+even we use autom to develop cloudformation templeates. it has some packages to develop code with auto compleation and auto generation 
+
+this simplifies our templeate creations.
+
+lets see how to install and add addons       

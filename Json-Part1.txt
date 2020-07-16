@@ -1,0 +1,77 @@
+{}   --> in json open { and closed } represent ans object
+
+lets take simple use case and i wanna represent an employe data. lets see how to do that using json
+
+{
+  "name": "keyspace"
+}
+
+this is very simple json which has one property 
+"name" is the property and value is "keyspace"
+every property in double quotes "" fallowed by the ":" after that its value  
+
+to represent another property add "," to end of the previous property.
+
+{
+  "name": "keyspace",
+  "salary": 50000
+}
+
+
+Note: jason also supports data types.
+
+above example first one is string & second one is number
+
+{
+  "name": "keyspace",
+  "salary": 50000
+  "isManager": true,    --> if he is manager the value is true                             otherwise false
+  "skills": ["aws", "python", "Docker"],  --> to reprecent                  tech skills this is going to be an array. and to menssion multiple values in this property json also supports arrays. array which has cellection of entries where each entry type "string" 
+
+  "address": {
+     "country: "India",
+     "state": telangana,
+     "pin": 500073
+}       
+--> address of the employee. address is not a simple text, address is a complex object. address has properties, if it simple text we can putit in "" and define its value. but in this case i want my address to be a complext object which intern has properties like drno, street, location, state, country and so on. this how we can represent an object inside another object.
+}
+
+json supports netsted objects
+
+
+{
+  "name": "keyspace",
+  "salary": 50000
+  "isManager": true,
+  "skills": ["aws", "python", "Docker"], 
+  "address": {
+     "country: "India",
+     "state": "telangana",
+     "pin": 500073
+     }       
+}
+
+to mension collection of objects that can be done with help of array notation. lets put , separated address objects 
+{
+  "name": "keyspace",
+  "salary": 50000
+  "isManager": true,
+  "skills": ["aws", "python", "Docker"], 
+  "address": [ {
+     "country: "India",
+     "state": "telangana",
+     "pin": 500073
+     },
+    { 
+     "country: "Bharath",
+     "state": "AP",
+     "pin": 517192
+    } 
+   ]      
+}
+
+this is how the basic json structure looks like.
+
+we can have main object, inside that we can have properties of diff types like text, number, boolean, array's, inside array's diff types like string, objects and so on 
+
+Note: json is case sensitive.
