@@ -1,0 +1,175 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "write what exactly we are going to do",
+    "Metadata": {
+
+    },
+    "Parameters": {
+      "MyAppVPCCidr": {
+          "Description": "Choose CIDR for VPC",
+          "Type": "String",
+          "Default": "10.10.0.0/16"
+      },
+      "SubNet1CIDR": {
+          "Description": "Choose CIDR for SUBNet1",
+          "Type": "String",
+          "Default": "10.10.1.0/24"
+      },
+      "SubNet2CIDR": {
+          "Description": "Choose CIDR for SUBNet2",
+          "Type": "String",
+          "Default": "10.10.2.0/24"
+      },
+      "Subnet1AZs": {
+          "Description": "Choose AZ for Subnet1",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "Subnet2AZs": {
+          "Description": "Choose AZ for Subnet2",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "WebserverKey": {
+          "Description": "Choose Key Name",
+          "Type": "AWS::EC2::KeyPair::KeyName"
+      },
+      "WebserverInstanceType": {
+          "Description": "Choose Instance Type",
+          "Type": "String",
+          "Default": "t2.micro",
+          "AllowedValues": ["t2.micro","t2.nano","t2.small"]
+      },
+      "WebserverAMI": {
+          "Description": "add AMI for webserver",
+          "Type": "String"
+      }
+    },
+    "Mappings": {
+
+    },
+    "Conditions": {
+
+    },
+    "Resources": {
+      "MyAppVPC": {
+        "Type": "AWS::EC2::VPC",
+        "Properties": {
+          "CidrBlock": { "Ref": "MyAppVPCCidr" },
+          "InstanceTenancy": "default",
+          "Tags": [{ "Key": "Name", "Value":  "MyAppVPC" }]
+        }
+      },
+      "Subnet1": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "MapPublicIpOnLaunch": true,
+          "AvailabilityZone": { "Ref": "Subnet1AZs" },
+          "VpcId": {
+            "Ref": "MyAppVPC"
+          },
+          "CidrBlock": { "Ref": "SubNet1CIDR" },
+          "Tags": [{ "Key": "Name", "Value":  "MyAppVPCSubNet1" }]
+        }
+      },
+      "Subnet2": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "MapPublicIpOnLaunch": true,
+          "AvailabilityZone": { "Ref": "Subnet2AZs" },
+          "VpcId": {
+            "Ref": "MyAppVPC"
+          },
+          "CidrBlock": { "Ref": "SubNet2CIDR" },
+          "Tags": [{ "Key": "Name", "Value":  "MyAppVPCSubNet2" }]
+        }
+      },
+      "MyAppIGW": {
+        "Type": "AWS::EC2::InternetGateway",
+        "Properties": {
+          "Tags": [{ "Key": "Name", "Value":  "MyAppIGW" }]
+        }
+      },
+      "AttachGateway": {
+        "Type": "AWS::EC2::VPCGatewayAttachment",
+        "Properties": {
+          "VpcId": { "Ref": "MyAppVPC" },
+          "InternetGatewayId": { "Ref": "MyAppIGW" }
+        }
+      },
+      "PublicSubNetRT": {
+        "Type": "AWS::EC2::RouteTable",
+        "Properties": {
+          "VpcId": { "Ref": "MyAppVPC" },
+          "Tags": [{ "Key": "Name", "Value":  "PublicSubNetRT" }]
+        }
+      },
+      "RouteIGW": {
+        "Type": "AWS::EC2::Route",
+        "Properties": {
+          "RouteTableId": { "Ref": "PublicSubNetRT" },
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "GatewayId": { "Ref": "MyAppIGW" }
+        }
+      },
+      "Subnet1RouteTableAssoc": {
+        "Type": "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties": {
+          "SubnetId": { "Ref": "Subnet1" },
+          "RouteTableId": { "Ref": "PublicSubNetRT" }
+        }
+      },
+      "Subnet2RouteTableAssoc": {
+        "Type": "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties": {
+          "SubnetId": { "Ref": "Subnet2" },
+          "RouteTableId": { "Ref": "PublicSubNetRT" }
+        }
+      },
+      "WebserverSG" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupName": "WebserverSG",
+          "GroupDescription" : "SG for ssh http traffic",
+          "SecurityGroupIngress" : [
+            { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0" },
+            { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0" }
+          ],
+          "VpcId" : { "Ref": "MyAppVPC" },
+          "Tags" :  [ { "Key": "Name", "Value":  "MyAppVPC" } ]
+        }
+      },
+      "Webserver1": {
+          "Type": "AWS::EC2::Instance",
+          "Properties": {
+              "KeyName": { "Ref": "WebserverKey" },
+              "SubnetId": { "Ref": "Subnet1" },
+              "ImageId": { "Ref": "WebserverAMI" },
+              "InstanceType": { "Ref": "WebserverInstanceType" },
+              "Monitoring": "false",
+              "SecurityGroupIds" : [{ "Ref": "WebserverSG" }],
+              "Tags": [
+                  {
+                      "Key": "Name",
+                      "Value": "Webserver1"
+                  }
+              ],
+              "UserData": {
+                  "Fn::Base64": {
+                      "Fn::Join": [
+                          "",
+                          [
+                              "#!/bin/bash -ex \n",
+                              "yum install httpd git -y \n",
+                              "systemctl enable httpd \n",
+                              "systemctl start httpd \n",
+                              "git clone https://github.com/keyspaceits/project-html-blue-website.git /var/www/html"
+                          ]
+                      ]
+                  }
+              }
+      }
+              }
+    },
+    "Outputs": {
+
+    }
+}
