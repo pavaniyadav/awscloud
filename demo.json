@@ -1,0 +1,130 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "",
+    "Metadata": {
+
+    },
+    "Parameters": {
+
+    },
+    "Mappings": {
+
+    },
+    "Conditions": {
+
+    },
+    "Resources": {
+"MyVPC": {
+  "Type": "AWS::EC2::VPC",
+  "Properties": {
+    "CidrBlock": "172.10.0.0/16",
+    "Tags": [{ "Key": "Name", "Value":  "MyVPC" }]
+  }
+},
+"SubNet1": {
+  "Type": "AWS::EC2::Subnet",
+  "Properties": {
+    "MapPublicIpOnLaunch": true,
+    "AvailabilityZone": "ap-south-1a",
+    "VpcId": { "Ref": "MyVPC" },
+    "CidrBlock": "172.10.0.0/24",
+    "Tags": [{ "Key": "Name", "Value":  "SubNet1" }]
+  }
+},
+"SubNet2": {
+  "Type": "AWS::EC2::Subnet",
+  "Properties": {
+    "MapPublicIpOnLaunch": true,
+    "AvailabilityZone": "ap-south-1b",
+    "VpcId": { "Ref": "MyVPC" },
+    "CidrBlock": "172.10.1.0/24",
+    "Tags": [{ "Key": "Name", "Value":  "SubNet2" }]
+  }
+},
+"MyIGW": {
+  "Type": "AWS::EC2::InternetGateway",
+  "Properties": {
+    "Tags": [{ "Key": "Name", "Value":  "MyIGW" }]
+  }
+},
+"AttachGateway": {
+  "Type": "AWS::EC2::VPCGatewayAttachment",
+  "Properties": {
+    "VpcId": { "Ref": "MyVPC" },
+    "InternetGatewayId": { "Ref": "MyIGW" }
+  }
+},
+"PublicRT": {
+  "Type": "AWS::EC2::RouteTable",
+  "Properties": {
+    "VpcId": { "Ref": "MyVPC" },
+    "Tags": [{ "Key": "Name", "Value":  "MyVPC" }]
+  }
+},
+"RouteIGW": {
+  "Type": "AWS::EC2::Route",
+  "Properties": {
+    "RouteTableId": { "Ref": "PublicRT" },
+    "DestinationCidrBlock": "0.0.0.0/0",
+    "GatewayId": { "Ref": "MyIGW" }
+  }
+},
+"Subnet1RoutetableAssoc": {
+  "Type": "AWS::EC2::SubnetRouteTableAssociation",
+  "Properties": {
+    "SubnetId": { "Ref": "SubNet1" },
+    "RouteTableId": { "Ref": "PublicRT" }
+  }
+},
+"Subnet2RoutetableAssoc": {
+  "Type": "AWS::EC2::SubnetRouteTableAssociation",
+  "Properties": {
+    "SubnetId": { "Ref": "SubNet2" },
+    "RouteTableId": { "Ref": "PublicRT" }
+  }
+},
+"WebserverSG" : {
+  "Type" : "AWS::EC2::SecurityGroup",
+  "Properties" : {
+    "GroupDescription" : "WebserverSG for ssh http traffic",
+    "SecurityGroupIngress" : [
+      { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0" },
+      { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0" }
+    ],
+    "VpcId" : { "Ref": "MyVPC" },
+    "Tags" :  [ { "Key": "Name", "Value":  "WebserverSGMyVPC" } ]
+  }
+},
+"Webserver1": {
+    "Type": "AWS::EC2::Instance",
+    "Properties": {
+        "KeyName": "mumbai-key",
+        "SubnetId": { "Ref": "SubNet1" },
+        "ImageId": "ami-08e0ca9924195beba",
+        "InstanceType": "t2.micro",
+        "Monitoring": "false",
+        "SecurityGroupIds" : [{ "Ref": "WebserverSG" }],
+        "Tags": [
+            {
+                "Key": "Name",
+                "Value": "Webserver1"
+            }
+        ],
+        "UserData": {
+            "Fn::Base64": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "#!/bin/bash -ex",
+                        "-"
+                    ]
+                ]
+            }
+        }
+}
+}
+    },
+    "Outputs": {
+
+    }
+}
